@@ -17,6 +17,8 @@ data Expr a
   | ELam [a] (Expr a) -- lambda abstraction
   deriving (Show)
 
+type CoreExpr = Expr Name
+
 type Name = String
 
 type Alter a = (Int, [a], Expr a) -- (tag, bound variables list, expression)
