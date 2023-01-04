@@ -4,35 +4,53 @@ import Language
 
 -- print :: CoreProgram -> String
 
-pprExpr :: CoreExpr -> String
-pprExpr (ENum n) = show n
-pprExpr (EVar v) = v
-pprExpr (EAp e1 e2) = pprExpr e1 ++ " " ++ pprExpr e2
+pprExpr :: CoreExpr -> Iseq
+pprExpr (ENum n) = iStr n
+pprExpr (EVar v) = iStr v
+pprExpr (EAp e1 e2) = mconcat [pprExpr e1, iStr " ", pprExpr e2]
 pprExpr (ELet isRec defs expr) =
   mconcat
     [ iStr keyword,
       iNewLine,
       iStr " ",
-      iIndent (pprDefs defs),
+      id (pprDefs defs),
       iNewLine,
       iStr "in ",
-      pprExpr expr
+      id (pprExpr expr)
     ]
   where
     keyword
-      | isRec == True = "letrec"
+      | isRec = "letrec"
       | otherwise = "let"
-pprExpr e = error $ "Unknown type of expression: " ++ show e
 
-pprAExpr :: CoreExpr -> String
+pprDefs :: [(Name, CoreExpr)] -> Iseq
+pprDefs defs = mconcat $ map sep defs
+  where
+    sep x = mconcat [pprDef x, iStr ";\n"]
+
+pprDef :: (Name, CoreExpr) -> Iseq
+pprDef (name, expr) = mconcat [iStr name, iStr " = ", id (pprExpr expr)]
+
+pprAExpr :: CoreExpr -> Iseq
 pprAExpr e
   | isAtomicExpr e = pprExpr e
-  | otherwise = "(" ++ pprExpr e ++ ")"
+  | otherwise = mconcat [iStr "(", pprExpr e, iStr ")"]
 
-data Iseq = Iseq {x :: String} deriving (Show)
+newtype Iseq = Iseq String deriving (Show)
 
 instance Monoid Iseq where
-  mempty = iNil
-  mappend (Iseq x) (Iseq y) = Iseq $ x ++ y
+  mempty = Iseq ""
 
---TODO : monoid instalce for iseq
+instance Semigroup Iseq where
+  (Iseq x) <> (Iseq y) = Iseq $ x ++ y
+
+iStr :: Show a => a -> Iseq
+iStr x = Iseq $ show x
+
+iNewLine :: Iseq
+iNewLine = Iseq "\n"
+
+iValue :: Iseq -> String
+iValue (Iseq x) = x
+
+--TODO : monoid instance for iseq
