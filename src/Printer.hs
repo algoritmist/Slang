@@ -6,16 +6,16 @@ import Language
 
 pprExpr :: CoreExpr -> Iseq
 pprExpr (ENum n) = iStr n
-pprExpr (EVar v) = iStr v
-pprExpr (EAp e1 e2) = mconcat [pprExpr e1, iStr " ", pprExpr e2]
+pprExpr (EVar v) = Iseq v
+pprExpr (EAp e1 e2) = mconcat [pprExpr e1, Iseq " ", pprExpr e2]
 pprExpr (ELet isRec defs expr) =
   mconcat
-    [ iStr keyword,
+    [ Iseq keyword,
       iNewLine,
-      iStr " ",
+      Iseq " ",
       id (pprDefs defs),
       iNewLine,
-      iStr "in ",
+      Iseq "in ",
       id (pprExpr expr)
     ]
   where
@@ -26,7 +26,7 @@ pprExpr (ELet isRec defs expr) =
 pprDefs :: [(Name, CoreExpr)] -> Iseq
 pprDefs defs = mconcat $ map sep defs
   where
-    sep x = mconcat [pprDef x, iStr ";\n"]
+    sep x = mconcat [pprDef x, Iseq ";\n"]
 
 pprDef :: (Name, CoreExpr) -> Iseq
 pprDef (name, expr) = mconcat [iStr name, iStr " = ", id (pprExpr expr)]
@@ -34,7 +34,7 @@ pprDef (name, expr) = mconcat [iStr name, iStr " = ", id (pprExpr expr)]
 pprAExpr :: CoreExpr -> Iseq
 pprAExpr e
   | isAtomicExpr e = pprExpr e
-  | otherwise = mconcat [iStr "(", pprExpr e, iStr ")"]
+  | otherwise = mconcat [Iseq "(", pprExpr e, Iseq ")"]
 
 newtype Iseq = Iseq String deriving (Show)
 
