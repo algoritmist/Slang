@@ -7,6 +7,7 @@ import Language
 pprExpr :: CoreExpr -> Iseq
 pprExpr (ENum n) = iStr n
 pprExpr (EVar v) = Iseq v
+pprExpr (EBinOp e1 op e2) = mconcat [pprExpr e1, Iseq " ", Iseq op, Iseq " ", pprExpr e2]
 pprExpr (EAp e1 e2) = mconcat [pprExpr e1, Iseq " ", pprExpr e2]
 pprExpr (ELet isRec defs expr) =
   mconcat

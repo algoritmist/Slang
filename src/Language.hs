@@ -6,6 +6,7 @@ data Expr a
   = EVar Name -- Variables
   | ENum Int -- Numbers
   | EConstr Int Int -- Constructors
+  | EBinOp (Expr a) (Op) (Expr a) -- Expressions
   | EAp (Expr a) (Expr a) -- Applications
   | ELet -- let(rec) expressions,
       IsRec -- True if recursive,
@@ -37,3 +38,5 @@ type CoreProgram = Program Name
 type ScDef a = (Name, [a], Expr a)
 
 type CoreScDef = ScDef Name
+
+type Op = Name
