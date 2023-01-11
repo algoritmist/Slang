@@ -4,54 +4,38 @@ import Language
 
 -- print :: CoreProgram -> String
 
-pprExpr :: CoreExpr -> Iseq
-pprExpr (ENum n) = iStr n
-pprExpr (EVar v) = Iseq v
-pprExpr (EBinOp e1 op e2) = mconcat [pprExpr e1, Iseq " ", Iseq op, Iseq " ", pprExpr e2]
-pprExpr (EAp e1 e2) = mconcat [pprExpr e1, Iseq " ", pprExpr e2]
+pprExpr :: CoreExpr -> String
+pprExpr (ENum n) = show n
+pprExpr (EVar v) = v
+pprExpr (EBinOp e1 op e2) = concat [pprExpr e1, " ", op, " ", pprExpr e2]
+pprExpr (EAp e1 e2) = concat [pprExpr e1, " ", pprExpr e2]
 pprExpr (ELet isRec defs expr) =
-  mconcat
-    [ Iseq keyword,
+  concat
+    [ keyword,
       iNewLine,
-      Iseq " ",
-      id (pprDefs defs),
+      " ",
+      pprDefs defs,
       iNewLine,
-      Iseq "in ",
-      id (pprExpr expr)
+      "in ",
+      pprExpr expr
     ]
   where
     keyword
       | isRec = "letrec"
       | otherwise = "let"
 
-pprDefs :: [(Name, CoreExpr)] -> Iseq
-pprDefs defs = mconcat $ map sep defs
+pprDefs :: [(Name, CoreExpr)] -> String
+pprDefs = concatMap sep
   where
-    sep x = mconcat [pprDef x, Iseq ";\n"]
+    sep x = concat [pprDef x, ";\n"]
 
-pprDef :: (Name, CoreExpr) -> Iseq
-pprDef (name, expr) = mconcat [iStr name, iStr " = ", id (pprExpr expr)]
+pprDef :: (Name, CoreExpr) -> String
+pprDef (name, expr) = concat [name, " = ", pprExpr expr]
 
-pprAExpr :: CoreExpr -> Iseq
+pprAExpr :: CoreExpr -> String
 pprAExpr e
   | isAtomicExpr e = pprExpr e
-  | otherwise = mconcat [Iseq "(", pprExpr e, Iseq ")"]
-
-newtype Iseq = Iseq String deriving (Show)
-
-instance Monoid Iseq where
-  mempty = Iseq ""
-
-instance Semigroup Iseq where
-  (Iseq x) <> (Iseq y) = Iseq $ x ++ y
-
-iStr :: Show a => a -> Iseq
-iStr x = Iseq $ show x
-
-iNewLine :: Iseq
-iNewLine = Iseq "\n"
-
-iValue :: Iseq -> String
-iValue (Iseq x) = x
-
---TODO : monoid instance for iseq
+  | otherwise = concat ["(", pprExpr e, ")"]
+  
+iNewLine :: String
+iNewLine = "\n"
