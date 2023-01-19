@@ -28,8 +28,10 @@ library
     Language
     Lib
     LPrelude
+    Operators
     Parser
     Printer
+    Syntax
     Utils
   other-modules:
     Paths_Slang
@@ -38,6 +40,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
     base >=4.7 && <5,
+    parsec >=3.0,
     regex-tdfa >=1.3.2 && <1.4
   default-language: Haskell2010
 
@@ -51,6 +54,7 @@ executable Slang-exe
   build-depends:
     Slang,
     base >=4.7 && <5,
+    parsec >=3.0,
     regex-tdfa >=1.3.2 && <1.4
   default-language: Haskell2010
 
@@ -65,5 +69,6 @@ test-suite Slang-test
   build-depends:
     Slang,
     base >=4.7 && <5,
+    parsec >=3.0,
     regex-tdfa >=1.3.2 && <1.4
   default-language: Haskell2010
