@@ -40,11 +40,12 @@ type Program a = [ScDef a]
 
 type CoreProgram = Program Name
 
-newtype ScDef a = ScDef (Function, [a], Expr a) deriving(Show)
+newtype ScDef a = ScDef (Function a, [a], Expr a) deriving Show
 
 type CoreDefinition = ScDef Name
 
-newtype Function = Function Name deriving(Show)
+newtype Function a = Function a deriving (Show)
+type CoreFunction = Function Name
 
 type VarDefinition a = (a, Expr a)
 
@@ -101,6 +102,6 @@ languageDef =
       Token.commentLine = "--",
       Token.identStart = letter,
       Token.identLetter = alphaNum,
-      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda"],
+      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option"],
       Token.reservedOpNames = Map.keys binaryOperations ++ Map.keys unaryOperations
     }

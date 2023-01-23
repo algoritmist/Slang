@@ -5,6 +5,8 @@ import Language
 import Text.Parsec.Expr
 import Text.ParserCombinators.Parsec
 import qualified Text.ParserCombinators.Parsec.Token as Token
+import Text.ParserCombinators.Parsec.Token (lexeme)
+import Text.ParserCombinators.Parsec.Token (comma)
 
 lookupR :: Eq b => b -> Map.Map c b -> c
 lookupR v = fst . head . Map.assocs . Map.filter (== v)
@@ -24,6 +26,7 @@ commaSep = Token.commaSep lexer
 float = Token.float lexer -- parses a floating point value
 
 stringLiteral = Token.stringLiteral lexer -- parses a literal string
+
 
 mapValueBetweenSpaces :: Eq a => Map.Map String a -> a -> Parser String
 mapValueBetweenSpaces m v = try (whiteSpace *> string (lookupR v m) <* whiteSpace)
@@ -56,6 +59,9 @@ subExpression =
 expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
 
+sepExpressions :: Parser [CoreExpr]
+sepExpressions = commaSep expression
+
 definition :: Parser CoreDefinition
 definition = do
   name <- function
@@ -65,6 +71,7 @@ definition = do
   char '='
   whiteSpace
   expr <- expression
+  char ';'
   return (ScDef (name, vars, expr))
 
 letExpression :: Parser CoreExpr
@@ -90,20 +97,21 @@ caseExpression = do
   return (ECase expr alts)
 
 alters :: Parser [CoreAlter]
-alters = many1 alter
+alters = many1 $ alter <* whiteSpace
 
 alter :: Parser CoreAlter
 alter = do
-  char '<'
+  string "option"
+  whiteSpace
   tag <- int
-  char '>'
   whiteSpace
   string "->"
   whiteSpace
   expr <- expression
+  optionMaybe $ char ','
   return (Alter (tag, expr))
 
-function :: Parser Function
+function :: Parser CoreFunction
 function = Function <$> identifier
 
 variable :: Parser String
