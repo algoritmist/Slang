@@ -4,9 +4,8 @@ import qualified Data.Map as Map
 import Language
 import Text.Parsec.Expr
 import Text.ParserCombinators.Parsec
+import Text.ParserCombinators.Parsec.Token (comma, lexeme)
 import qualified Text.ParserCombinators.Parsec.Token as Token
-import Text.ParserCombinators.Parsec.Token (lexeme)
-import Text.ParserCombinators.Parsec.Token (comma)
 
 lookupR :: Eq b => b -> Map.Map c b -> c
 lookupR v = fst . head . Map.assocs . Map.filter (== v)
@@ -26,7 +25,6 @@ commaSep = Token.commaSep lexer
 float = Token.float lexer -- parses a floating point value
 
 stringLiteral = Token.stringLiteral lexer -- parses a literal string
-
 
 mapValueBetweenSpaces :: Eq a => Map.Map String a -> a -> Parser String
 mapValueBetweenSpaces m v = try (whiteSpace *> string (lookupR v m) <* whiteSpace)
@@ -98,7 +96,7 @@ caseExpression = do
   return (ECase expr alts)
 
 alters :: Parser [CoreAlter]
-alters = many1 $ alter <* whiteSpace
+alters = many1 $ whiteSpace *> alter
 
 alter :: Parser CoreAlter
 alter = do
@@ -133,9 +131,11 @@ variableDefinition = do
 int :: Parser Int
 int = fromInteger <$> Token.integer lexer
 
-
 application :: Parser CoreExpr
 application = do
   f <- function
   vars <- variableList
   return $ EFunCall f vars
+
+program :: Parser CoreProgram
+program = many1 $ whiteSpace *> definition
