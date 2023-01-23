@@ -7,12 +7,12 @@ import qualified Text.ParserCombinators.Parsec.Token as Token
 import Utils
 
 data Expr a
-  = EVar Name -- Variables
+  = EVar a -- Variables
   | ENum Int -- Numbers
   | EConstr Int Int -- Constructors
   | EUnOp UnaryOperation (Expr a)
   | EBinOp BinaryOperation (Expr a) (Expr a) -- binary operation
-  | EAp (Expr a) (Expr a) -- Applications
+  | EFunCall (Function a) [a] -- Applications
   | ELet -- let(rec) expressions,
   --IsRec -- True if recursive,
       CoreVarDefinition -- list of bound variables,

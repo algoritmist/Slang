@@ -53,6 +53,7 @@ subExpression =
   parens expression
     <|> letExpression
     <|> caseExpression
+    <|> try application
     <|> EVar <$> variable
     <|> ENum <$> int
 
@@ -131,3 +132,10 @@ variableDefinition = do
 
 int :: Parser Int
 int = fromInteger <$> Token.integer lexer
+
+
+application :: Parser CoreExpr
+application = do
+  f <- function
+  vars <- variableList
+  return $ EFunCall f vars
