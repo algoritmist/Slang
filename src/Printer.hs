@@ -4,12 +4,12 @@ import Language
 
 -- print :: CoreProgram -> String
 
-pprExpr :: CoreExpr -> String
+{-pprExpr :: CoreExpr -> String
 pprExpr (ENum n) = show n
 pprExpr (EVar v) = v
-pprExpr (EBinOp e1 op e2) = concat [pprExpr e1, " ", op, " ", pprExpr e2]
+--pprExpr (EBinOp e1 op e2) = concat [pprExpr e1, " ", op, " ", pprExpr e2]
 pprExpr (EAp e1 e2) = concat [pprExpr e1, " ", pprExpr e2]
-pprExpr (ELet isRec defs expr) =
+pprExpr (ELet defs expr) =
   concat
     [ keyword,
       iNewLine,
@@ -20,9 +20,7 @@ pprExpr (ELet isRec defs expr) =
       pprExpr expr
     ]
   where
-    keyword
-      | isRec = "letrec"
-      | otherwise = "let"
+    keyword = "let"
 
 pprDefs :: [(Name, CoreExpr)] -> String
 pprDefs = concatMap sep
@@ -36,6 +34,6 @@ pprAExpr :: CoreExpr -> String
 pprAExpr e
   | isAtomicExpr e = pprExpr e
   | otherwise = concat ["(", pprExpr e, ")"]
-  
+
 iNewLine :: String
-iNewLine = "\n"
+iNewLine = "\n"-}

@@ -2,7 +2,6 @@ module Parser where
 
 import qualified Data.Map as Map
 import Language
-import Syntax.Abstract
 import Text.Parsec.Expr
 import Text.ParserCombinators.Parsec
 import qualified Text.ParserCombinators.Parsec.Token as Token
@@ -32,9 +31,9 @@ mapValueBetweenSpaces m v = try (whiteSpace *> string (lookupR v m) <* whiteSpac
 oneOfKeys :: Map.Map String a -> Parser a
 oneOfKeys m = ((Map.!) m) <$> (choice . map string . Map.keys $ m)
 
-unOp op = Prefix $ UnaryExpression op <$ mapValueBetweenSpaces unaryOperations op
+unOp op = Prefix $ EUnOp op <$ mapValueBetweenSpaces unaryOperations op
 
-binOp op = Infix (BinaryExpression op <$ mapValueBetweenSpaces binaryOperations op) AssocLeft
+binOp op = Infix (EBinOp op <$ mapValueBetweenSpaces binaryOperations op) AssocLeft
 
 operations =
   [ [unOp Not, unOp Neg],
@@ -46,67 +45,81 @@ operations =
     [binOp Or]
   ]
 
-subExpression :: Parser Expression
+subExpression :: Parser CoreExpr
 subExpression =
   parens expression
-    <|> ELet <$> letExpression
-    <|> ECase <$> caseExpression
+    <|> letExpression
+    <|> caseExpression
     <|> EVar <$> variable
     <|> ENum <$> int
 
-expression :: Parser Expression
+expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
 
 definition :: Parser CoreDefinition
 definition = do
   name <- function
   whiteSpace
-  variables <- variableList
+  vars <- variableList
   whiteSpace
   char '='
   whiteSpace
   expr <- expression
-  return (CoreDefinition (name, variables, expr))
+  return (ScDef (name, vars, expr))
 
-letExpression :: Parser ELet
+letExpression :: Parser CoreExpr
 letExpression = do
   string "let"
   whiteSpace
-  variable <- variableDefinition
+  var <- variableDefinition
   whiteSpace
   string "in"
   whiteSpace
-  return (ELet variable <$> varAssigns)
+  expr <- expression
+  return (ELet var expr)
 
-caseExpression :: Parser ECase
+caseExpression :: Parser CoreExpr
 caseExpression = do
   string "case"
   whiteSpace
-  variable <- variableDefinition
+  expr <- expression
   whiteSpace
   string "of"
-  return (ECase expr <$> alters)
+  whiteSpace
+  alts <- alters
+  return (ECase expr alts)
 
 alters :: Parser [CoreAlter]
 alters = many1 alter
 
 alter :: Parser CoreAlter
 alter = do
-  char "<"
+  char '<'
   tag <- int
-  char ">"
+  char '>'
   whiteSpace
   string "->"
   whiteSpace
   expr <- expression
-  return (CoreAlter (tag, expr))
+  return (Alter (tag, expr))
 
 function :: Parser Function
+function = Function <$> identifier
 
-variable = Function <$> identifier
+variable :: Parser String
+variable = identifier
 
-variable :: Parser EVar
-variable = EVar <$> identifier
+variableList :: Parser [String]
+variableList = many1 variable
+
+variableDefinition :: Parser CoreVarDefinition
+variableDefinition = do
+  name <- variable
+  whiteSpace
+  char '='
+  whiteSpace
+  expr <- expression
+  return (name, expr)
 
 int :: Parser Int
 int = fromInteger <$> Token.integer lexer

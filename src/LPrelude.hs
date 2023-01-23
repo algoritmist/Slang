@@ -14,9 +14,10 @@ compose f g x = f (g x)
 twice :: (a -> a) -> a -> a
 twice f = f . f
 
+{-
 preludeDefs :: CoreProgram
 preludeDefs =
-  [ ("I", ["x"], EVar "x"),
+  map ScDef [ ("I", ["x"], EVar "x"),
     ("K", ["x", "y"], EVar "x"),
     ("K1", ["x", "y"], EVar "y"),
     ( "S",
@@ -32,3 +33,4 @@ preludeDefs =
       EAp (EAp (EVar "compose") (EVar "f")) (EVar "f")
     )
   ]
+-}

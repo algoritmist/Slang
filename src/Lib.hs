@@ -2,6 +2,7 @@ module Lib
     ( someFunc
     ) where
 import Parser
+import Text.Parsec.Prim (parse)
 
 someFunc :: IO ()
-someFunc = putStrLn $ show $ clex "3 == 5 - 2 \n--this is a comment\n y = x^2\n"
+someFunc = print $ parse definition "test" "f x y = x*2-y"
