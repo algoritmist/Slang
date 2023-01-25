@@ -26,6 +26,7 @@ dependencies:
 - containers
 - bytestring
 - filepath
+- tuple
 
 ghc-options:
 - -Wall

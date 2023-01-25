@@ -43,7 +43,8 @@ library
     containers,
     filepath,
     parsec,
-    regex-tdfa >=1.3.2 && <1.4
+    regex-tdfa >=1.3.2 && <1.4,
+    tuple
   default-language: Haskell2010
 
 executable Slang-exe
@@ -60,7 +61,8 @@ executable Slang-exe
     containers,
     filepath,
     parsec,
-    regex-tdfa >=1.3.2 && <1.4
+    regex-tdfa >=1.3.2 && <1.4,
+    tuple
   default-language: Haskell2010
 
 test-suite Slang-test
@@ -78,5 +80,6 @@ test-suite Slang-test
     containers,
     filepath,
     parsec,
-    regex-tdfa >=1.3.2 && <1.4
+    regex-tdfa >=1.3.2 && <1.4,
+    tuple
   default-language: Haskell2010

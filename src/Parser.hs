@@ -34,7 +34,7 @@ oneOfKeys m = ((Map.!) m) <$> (choice . map string . Map.keys $ m)
 
 unOp op = Prefix $ EUnOp op <$ mapValueBetweenSpaces unaryOperations op
 
-binOp op = Infix (EBinOp op <$ mapValueBetweenSpaces binaryOperations op) AssocLeft
+binOp op = Infix (EBinOp op <$ mapValueBetweenSpaces binaryOperations op) AssocRight
 
 operations =
   [ [unOp Not, unOp Neg],
@@ -58,8 +58,6 @@ subExpression =
 expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
 
-sepExpressions :: Parser [CoreExpr]
-sepExpressions = commaSep expression
 
 definition :: Parser CoreDefinition
 definition = do
@@ -71,7 +69,7 @@ definition = do
   whiteSpace
   expr <- expression
   char ';'
-  return (ScDef (name, vars, expr))
+  return (name, vars, expr)
 
 letExpression :: Parser CoreExpr
 letExpression = do
@@ -120,7 +118,7 @@ variableList :: Parser [CoreExpr]
 variableList = many1 variable
 
 variableAndFunctionList :: Parser [CoreExpr]
-variableAndFunctionList = many1 expression
+variableAndFunctionList = many1 (variable <|> try (ENum <$> int))
 
 variableDefinition :: Parser CoreVarDefinition
 variableDefinition = do

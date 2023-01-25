@@ -40,8 +40,7 @@ type Program a = [ScDef a]
 
 type CoreProgram = Program Name
 
-newtype ScDef a = ScDef (Function a, [Expr a], Expr a) deriving Show
-
+type ScDef a = (Function a, [Expr a], Expr a)
 type CoreDefinition = ScDef Name
 
 type Function a = a
