@@ -12,7 +12,7 @@ data Expr a
   | EConstr Int Int -- Constructors
   | EUnOp UnaryOperation (Expr a)
   | EBinOp BinaryOperation (Expr a) (Expr a) -- binary operation
-  | EFunCall (Function a) [a] -- Applications
+  | EFunCall (Function a) [Expr a] -- Applications
   | ELet -- let(rec) expressions,
   --IsRec -- True if recursive,
       CoreVarDefinition -- list of bound variables,
@@ -40,14 +40,14 @@ type Program a = [ScDef a]
 
 type CoreProgram = Program Name
 
-newtype ScDef a = ScDef (Function a, [a], Expr a) deriving Show
+newtype ScDef a = ScDef (Function a, [Expr a], Expr a) deriving Show
 
 type CoreDefinition = ScDef Name
 
-newtype Function a = Function a deriving (Show)
+type Function a = a
 type CoreFunction = Function Name
 
-type VarDefinition a = (a, Expr a)
+type VarDefinition a = (Expr a, Expr a) -- (variable name & value)
 
 type CoreVarDefinition = VarDefinition Name
 

@@ -52,7 +52,7 @@ subExpression =
     <|> letExpression
     <|> caseExpression
     <|> try application
-    <|> EVar <$> variable
+    <|> variable
     <|> ENum <$> int
 
 expression :: Parser CoreExpr
@@ -111,13 +111,16 @@ alter = do
   return (Alter (tag, expr))
 
 function :: Parser CoreFunction
-function = Function <$> identifier
+function = identifier
 
-variable :: Parser String
-variable = identifier
+variable :: Parser CoreExpr
+variable = EVar <$> identifier
 
-variableList :: Parser [String]
+variableList :: Parser [CoreExpr]
 variableList = many1 variable
+
+variableAndFunctionList :: Parser [CoreExpr]
+variableAndFunctionList = many1 expression
 
 variableDefinition :: Parser CoreVarDefinition
 variableDefinition = do
@@ -134,7 +137,7 @@ int = fromInteger <$> Token.integer lexer
 application :: Parser CoreExpr
 application = do
   f <- function
-  vars <- variableList
+  vars <- variableAndFunctionList
   return $ EFunCall f vars
 
 program :: Parser CoreProgram
