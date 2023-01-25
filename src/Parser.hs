@@ -118,7 +118,7 @@ variableList :: Parser [CoreExpr]
 variableList = many1 variable
 
 variableAndFunctionList :: Parser [CoreExpr]
-variableAndFunctionList = many1 (variable <|> try (ENum <$> int))
+variableAndFunctionList = many1 (variable <|> try (ENum <$> int) <|> try (parens expression))
 
 variableDefinition :: Parser CoreVarDefinition
 variableDefinition = do
