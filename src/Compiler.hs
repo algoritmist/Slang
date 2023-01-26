@@ -4,17 +4,14 @@ import Data.List
 import Language
 import Parser
 import Data.Tuple.Select
+import Stack
 -- runProg :: String -> String
 
 type Addr = Int
 
-data Stack x = ListStack [x] deriving (Show)
-
-type FunctionStack = Stack (String, Int) -- number of args & where to jump
+type FunctionStack = Stack (String, Addr) -- number of args & where to jump
 
 type InstructionStack = Stack MetaExpr -- Modified CoreExpr
-
-data ExecExpr = ExecExpr
 
 toStack :: [t] -> Stack t
 toStack = ListStack
@@ -34,15 +31,13 @@ toExecFunction (f, bounds, _) = (f, length bounds)
 functionList :: CoreProgram -> [MetaFunction]
 functionList = map toExecFunction
 
-type FLabel = Int -- first fase of conversion
-
 data MetaExpr
   = VLabel Int -- Variable label
   | Num Int -- Numbers
   | Constr Int Int -- Constructors
   | UnOp UnaryOperation MetaExpr
   | BinOp BinaryOperation MetaExpr MetaExpr -- binary operation
-  | FunCall FLabel [MetaExpr] -- Applications ?
+  | FunCall Int [MetaExpr] -- Applications ?
   {-| ELet -- let(rec) expressions,
   --IsRec -- True if recursive,
       CoreVarDefinition -- list of bound variables,
