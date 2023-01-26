@@ -14,14 +14,20 @@ type FunctionStack = Stack (String, Addr) -- number of args & where to jump
 
 type InstructionStack = Stack MetaExpr -- Modified CoreExpr
 
+-- heap will be used in next implementations
 data Heap = Heap deriving (Show)
-
+-- same goes for stats
 data Stats = Stats deriving (Show)
 
 type MetaFunction = (String, Int)
 
-type ArgStack = Stack Int
+type ArgStack = Stack Int -- arg stack must be mutable!
 
+{-
+the idea of state is similar to assembly:
+functions and expressions are put in immutable compile-time stack
+arguments for functions are put in mutable stack
+-}
 data State = State {functions :: FunctionStack, instructions :: InstructionStack, stack :: ArgStack, heap :: Heap, stats :: Stats} deriving (Show)
 
 
@@ -87,5 +93,5 @@ toMetaExprs xs = map (\(vars, expr) -> toMeta vars functionStack expr) sndPart w
 toState :: CoreProgram -> State
 toState xs = State functions instructions args Heap Stats where
   functions = toStack $ functionList xs
-  args = toStack []
+  args = newMutableStack
   instructions = toStack $ toMetaExprs xs

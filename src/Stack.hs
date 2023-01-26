@@ -2,13 +2,17 @@ module Stack where
 
 import Data.List
 
-data Stack x = ListStack [x] | MutableStack x deriving (Show)
+data Stack x = ListStack [x] | MutableStack (ArrayList x) deriving (Show)
 
 toStack :: [t] -> Stack t
 toStack = ListStack
 
+newMutableStack :: t -> Stack t
+newMutableStack = MutableStack
+
 push :: t -> Stack t -> Stack t
 push x (ListStack xs) = ListStack $ x : xs
+push x (MutableStack xs) =
 
 pop :: Stack t -> Maybe (Stack t)
 pop (ListStack []) = Nothing

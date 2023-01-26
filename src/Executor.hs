@@ -42,8 +42,9 @@ execute fun exprs state = do
   if addr == -1 then
     --writeStats state
     return $ error $ "Function \'" ++ fun ++ "\' with " ++ show len ++ "arguments not defined"
-  -- variable stack should be mutable!
+  
   else do
+    -- variable stack should be mutable!
     writeStack exprs state
     addr' <- get addr $ instructions state
     if addr' == Nothing then
