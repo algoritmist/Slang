@@ -8,26 +8,30 @@ import Data.Tuple.Select
 
 type Addr = Int
 
-type Stack x = [x]
+data Stack x = ListStack [x] deriving (Show)
 
-type FunctionStack = Stack (Int, Int) -- number of args & where to jump
+type FunctionStack = Stack (String, Int) -- number of args & where to jump
 
-type InstructionStack = Stack ExecExpr -- Modified CoreExpr
+type InstructionStack = Stack MetaExpr -- Modified CoreExpr
 
 data ExecExpr = ExecExpr
 
-data Heap = Heap
+toStack :: [t] -> Stack t
+toStack = ListStack
 
-data Stats = Stats
+data Heap = Heap deriving (Show)
 
-data State = State {functions :: FunctionStack, instructions :: InstructionStack, heap :: Heap, stats :: Stats}
+data Stats = Stats deriving (Show)
 
-type StackFunction = (String, Int)
+type MetaFunction = (String, Int)
 
-toExecFunction :: CoreDefinition -> StackFunction
+data State = State {functions :: FunctionStack, instructions :: InstructionStack, heap :: Heap, stats :: Stats} deriving (Show)
+
+
+toExecFunction :: CoreDefinition -> MetaFunction
 toExecFunction (f, bounds, _) = (f, length bounds)
 
-functionList :: CoreProgram -> [StackFunction]
+functionList :: CoreProgram -> [MetaFunction]
 functionList = map toExecFunction
 
 type FLabel = Int -- first fase of conversion
@@ -51,7 +55,7 @@ data MetaExpr
 
 type MetaProgram = [MetaExpr]
 
-toMeta :: [String] -> [StackFunction] -> CoreExpr -> MetaExpr
+toMeta :: [String] -> [MetaFunction] -> CoreExpr -> MetaExpr
 toMeta vars _ (EVar x) = case elemIndex x vars of
   (Just n) -> VLabel n
   Nothing -> error $ "cant evaluate expression: variable \'" ++ x ++ "\' is free"
@@ -67,14 +71,6 @@ toMeta _ _ (ENum x) = Num x
 
 toMeta _ _ _ = error "cant evaluate expression: not supported yet"
 
-toMetaExprs :: CoreProgram -> [MetaExpr]
-toMetaExprs xs = map (\(vars, expr) -> toMeta vars functionStack expr) sndPart where
-  -- step 1: function stack is assembled of functions and number of arguments
-  -- now we need to replace each function with its address on the stack
-  functionStack = functionList xs
-  -- step 2: we also need to replace variable with its label, to get values from stack
-  sndPart = map (\x -> (varsToStr $ sel2 x, sel3 x)) xs
-
 fstMap :: [(a, b)] -> [a]
 fstMap = fmap fst
 
@@ -84,3 +80,18 @@ varToStr _ = error "non-variable bound! check parser"
 
 varsToStr :: [CoreExpr] -> [String]
 varsToStr = map varToStr
+
+
+toMetaExprs :: CoreProgram -> [MetaExpr]
+toMetaExprs xs = map (\(vars, expr) -> toMeta vars functionStack expr) sndPart where
+  -- step 1: function stack is assembled of functions and number of arguments
+  -- now we need to replace each function with its address on the stack
+  functionStack = functionList xs
+  -- step 2: we also need to replace variable with its label, to get values from stack
+  sndPart = map (\x -> (varsToStr $ sel2 x, sel3 x)) xs
+
+
+toState :: CoreProgram -> State
+toState xs = State functions instructions Heap Stats where
+  functions = toStack $ functionList xs
+  instructions = toStack $ toMetaExprs xs
