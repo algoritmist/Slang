@@ -13,16 +13,15 @@ type FunctionStack = Stack (String, Addr) -- number of args & where to jump
 
 type InstructionStack = Stack MetaExpr -- Modified CoreExpr
 
-toStack :: [t] -> Stack t
-toStack = ListStack
-
 data Heap = Heap deriving (Show)
 
 data Stats = Stats deriving (Show)
 
 type MetaFunction = (String, Int)
 
-data State = State {functions :: FunctionStack, instructions :: InstructionStack, heap :: Heap, stats :: Stats} deriving (Show)
+type ArgStack = Stack Int
+
+data State = State {functions :: FunctionStack, instructions :: InstructionStack, stack :: ArgStack, heap :: Heap, stats :: Stats} deriving (Show)
 
 
 toExecFunction :: CoreDefinition -> MetaFunction
