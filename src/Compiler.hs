@@ -24,9 +24,9 @@ type MetaFunction = (String, Int)
 type ArgStack = Stack Int -- arg stack must be mutable!
 
 {-
-the idea of state is similar to assembly:
+the idea of state is similar to assembly labels:
 functions and expressions are put in immutable compile-time stack
-arguments for functions are put in mutable stack
+arguments for functions are put in mutable stack (it was supposed to be an arraylist)
 -}
 data State = State {functions :: FunctionStack, instructions :: InstructionStack, stack :: ArgStack, heap :: Heap, stats :: Stats} deriving (Show)
 
