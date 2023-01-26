@@ -1,9 +1,13 @@
 module Utils where
 
-type IsRec = Bool
 
-recursive, nonRecursive :: IsRec
-recursive = True
-nonRecursive = False
+fstMap :: [(a, b)] -> [a]
+fstMap = fmap fst
+
+sndMap :: [(a, b)] -> [b]
+sndMap = fmap snd
 
 
+unwrap :: Maybe t -> t
+unwrap (Just x) = x
+unwrap Nothing = error "cant unwrap empty value"

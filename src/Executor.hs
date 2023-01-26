@@ -12,6 +12,7 @@ import Stack
 -- to reduce and expression we should be aware of global State
 reduce :: MetaExpr -> State -> MetaExpr
 reduce (VLabel n) st = maybe ILegal Num (get n $ stack st)
+-- exprs not redused here for laziness!
 reduce (FunCall fun exprs) st = execute fun exprs st
 reduce (UnOp op expr) st = applyUnOp op $ reduce expr st
 reduce (BinOp op expr1 expr2) st = applyBinOp op (reduce expr1 st) (reduce expr2 st)
@@ -34,4 +35,17 @@ applyBinOp _ _ _ = ILegal --other binops not supported yet for simplicity
 type FName = String
 -- we need to get variable value from stack
 execute :: FName -> [MetaExpr] -> State -> MetaExpr
-execute fun vars state =
+execute fun exprs state = do
+  len <- length exprs
+  addr <- elemIndex' (fun, len) $ functions state -- get the address of expr in stack
+  if addr == -1 then
+    --writeStats state
+    return $ error $ "Function \'" ++ f ++ "\' with " ++ show len ++ "arguments not defined"
+  -- variable stack should be mutable!
+  else do
+    writeStack exprs state
+    addr' <- get addr $ instructions state
+    if isNothing addr' then
+      return $ error $ "Internal error: no expression for function \'" ++ f ++ "\'"
+    else 
+      return $ reduce (unwrap addr') state

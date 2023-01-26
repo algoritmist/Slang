@@ -5,6 +5,7 @@ import Language
 import Parser
 import Data.Tuple.Select
 import Stack
+import Utils
 -- runProg :: String -> String
 
 type Addr = Int
@@ -66,9 +67,6 @@ toMeta _ _ (ENum x) = Num x
 
 toMeta _ _ _ = error "cant evaluate expression: not supported yet"
 
-fstMap :: [(a, b)] -> [a]
-fstMap = fmap fst
-
 varToStr :: CoreExpr -> String
 varToStr (EVar x) = x
 varToStr _ = error "non-variable bound! check parser"
@@ -87,6 +85,7 @@ toMetaExprs xs = map (\(vars, expr) -> toMeta vars functionStack expr) sndPart w
 
 
 toState :: CoreProgram -> State
-toState xs = State functions instructions Heap Stats where
+toState xs = State functions instructions args Heap Stats where
   functions = toStack $ functionList xs
+  args = toStack []
   instructions = toStack $ toMetaExprs xs
