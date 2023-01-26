@@ -37,6 +37,7 @@ data MetaExpr
   | UnOp UnaryOperation MetaExpr
   | BinOp BinaryOperation MetaExpr MetaExpr -- binary operation
   | FunCall Int [MetaExpr] -- Applications ?
+  | ILegal
   {-| ELet -- let(rec) expressions,
   --IsRec -- True if recursive,
       CoreVarDefinition -- list of bound variables,
