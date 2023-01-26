@@ -4,6 +4,7 @@ import Compiler hiding (toMeta, toMetaExprs, varToStr)
 import Language
 import Parser (program)
 import Stack
+import Utils
 
 -- this function gets String input and returns the result of program execution
 --execute :: String -> String
@@ -40,12 +41,12 @@ execute fun exprs state = do
   addr <- elemIndex' (fun, len) $ functions state -- get the address of expr in stack
   if addr == -1 then
     --writeStats state
-    return $ error $ "Function \'" ++ f ++ "\' with " ++ show len ++ "arguments not defined"
+    return $ error $ "Function \'" ++ fun ++ "\' with " ++ show len ++ "arguments not defined"
   -- variable stack should be mutable!
   else do
     writeStack exprs state
     addr' <- get addr $ instructions state
-    if isNothing addr' then
-      return $ error $ "Internal error: no expression for function \'" ++ f ++ "\'"
-    else 
+    if addr' == Nothing then
+      return $ error $ "Internal error: no expression for function \'" ++ fun ++ "\'"
+    else
       return $ reduce (unwrap addr') state
