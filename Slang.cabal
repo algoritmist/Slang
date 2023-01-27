@@ -40,7 +40,6 @@ library
     src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-    arraylist ==0.1.0.0,
     base >=4.7 && <5,
     bytestring,
     containers,
@@ -59,7 +58,6 @@ executable Slang-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
     Slang,
-    arraylist ==0.1.0.0,
     base >=4.7 && <5,
     bytestring,
     containers,
@@ -79,7 +77,6 @@ test-suite Slang-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
     Slang,
-    arraylist ==0.1.0.0,
     base >=4.7 && <5,
     bytestring,
     containers,

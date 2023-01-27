@@ -27,7 +27,6 @@ dependencies:
 - bytestring
 - filepath
 - tuple
-- arraylist == 0.1.0.0
 
 ghc-options:
 - -Wall

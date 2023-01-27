@@ -21,7 +21,7 @@ data Stats = Stats deriving (Show)
 
 type MetaFunction = (String, Int)
 
-type ArgStack = Stack Int -- arg stack must be mutable!
+type ArgStack = Stack MetaExpr -- arg stack must be mutable!
 
 {-
 the idea of state is similar to assembly labels:
@@ -30,6 +30,8 @@ arguments for functions are put in mutable stack (it was supposed to be an array
 -}
 data State = State {functions :: FunctionStack, instructions :: InstructionStack, stack :: ArgStack, heap :: Heap, stats :: Stats} deriving (Show)
 
+writeStack :: MetaExpr -> State -> State
+writeStack
 
 toExecFunction :: CoreDefinition -> MetaFunction
 toExecFunction (f, bounds, _) = (f, length bounds)
@@ -93,5 +95,5 @@ toMetaExprs xs = map (\(vars, expr) -> toMeta vars functionStack expr) sndPart w
 toState :: CoreProgram -> State
 toState xs = State functions instructions args Heap Stats where
   functions = toStack $ functionList xs
-  args = newMutableStack
+  args = toStack []
   instructions = toStack $ toMetaExprs xs
