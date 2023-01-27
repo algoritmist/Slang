@@ -1,6 +1,8 @@
 module Executor where
 
 import Compiler hiding (toMeta, toMetaExprs, varToStr)
+import Control.Monad (when)
+import Data.Maybe
 import Language
 import Parser (program)
 import Stack
@@ -10,14 +12,29 @@ import Utils
 --execute :: String -> String
 --execute = toState . program
 
+reduceAll :: [MetaExpr] -> State -> (MetaExpr -> State -> (MetaExpr, State)) -> ([MetaExpr], State)
+reduceAll exprs state reducer = (exprs', st')
+  where
+    results = reduces exprs state
+    st' = snd $ last results
+    exprs' = fstMap results
+
+    reduces [] _ = error "cant reduce nothing"
+    reduces [x] state = [reducer x state]
+    reduces (x : xs) state = (x', state') : reduces xs state'
+      where
+        (x', state') = reducer x state
+
 -- to reduce and expression we should be aware of global State
 reduce :: MetaExpr -> State -> (MetaExpr, State)
-reduce (VLabel n) st = (maybe ILegal Num (get n $ stack st), st)
+reduce (VLabel n) st = (expr, st)
+  where
+    expr = Data.Maybe.fromMaybe ILegal (get n $ stack st)
 -- exprs not fully redused here for laziness!
 reduce (FunCall fun exprs) st = execute fun exprs' st'
   where
-    (exprs', st') = weakReduce exprs st
-reduce (UnOp op expr) st = applyUnOp op $ reduce expr st
+    (exprs', st') = reduceAll exprs st reduce
+reduce (UnOp op expr) st = uncurry (applyUnOp op) (reduce expr st)
 reduce (BinOp op expr1 expr2) st = applyBinOp op e1 e2 st''
   where
     (e1, st') = reduce expr1 st
@@ -25,18 +42,13 @@ reduce (BinOp op expr1 expr2) st = applyBinOp op e1 e2 st''
 -- any other expr wont be reduced
 reduce expr st = (expr, st) -- let & case not supported yet
 
-weakReduce :: MetaEpxr -> State -> (MetaExpr, State)
+weakReduce :: MetaExpr -> State -> (MetaExpr, State)
 -- if its a variable then replace with stack value
 weakReduce (VLabel n) st = reduce (VLabel n) st
 -- else try reducing subexpr
 weakReduce (FunCall fun exprs) st = (FunCall fun exprs', st')
   where
-    reduces [] state = ([], state)
-    reduces (x : xs) state = (x', state') : reduces xs state'
-      where
-        (x', state') = weakReduce x state
-    (exprs', sts') = reduces exprs st
-    st' = last sts'
+    (exprs', st') = reduceAll exprs st weakReduce
 weakReduce (UnOp op expr) st = (UnOp op expr', st')
   where
     (expr', st') = weakReduce expr st
@@ -48,32 +60,28 @@ weakReduce expr st = (expr, st)
 
 applyUnOp :: UnaryOperation -> MetaExpr -> State -> (MetaExpr, State)
 applyUnOp Neg expr st = case expr of
-  (Num x) -> (st, Num $ - x)
-  _ -> (st, UnOp Neg expr) -- if cant reduce dont reduce, it'll be useful for laziness
+  (Num x) -> (Num $ - x, st)
+  _ -> (UnOp Neg expr, st) -- if cant reduce dont reduce, it'll be useful for laziness
 
 applyBinOp :: BinaryOperation -> MetaExpr -> MetaExpr -> State -> (MetaExpr, State)
 applyBinOp Sum (Num x) (Num y) st = (Num $ x + y, st)
 applyBinOp Sub (Num x) (Num y) st = (Num $ x - y, st)
 applyBinOp Mul (Num x) (Num y) st = (Num $ x * y, st)
-applyBinOp Div (Num x) (Num y) st = (Num $ x / y, st)
+applyBinOp Div (Num x) (Num y) st = (Num $ x `div` y, st)
 applyBinOp _ _ _ st = (ILegal, st) --other binops not supported yet for simplicity
 
-type FName = String
+type FNum = Int
 
 -- we need to get variable value from stack
-execute :: FName -> [MetaExpr] -> State -> (MetaExpr, State)
-execute fun exprs state = do
-  len <- length exprs
-  addr <- elemIndex' (fun, len) $ functions state -- get the address of expr in stack
-  if addr == -1
-    then --writeStats state
-      return $ error $ "Function \'" ++ fun ++ "\' with " ++ show len ++ "arguments not defined"
-    else do
-      -- variable stack should be mutable!
-      addr' <- get addr $ instructions state
-      if addr' == Nothing
-        then return $ error $ "Internal error: no expression for function \'" ++ fun ++ "\'"
-        else do
-          new <- writeStack exprs state
-          (expr, st) <- reduce (unwrap addr') new
-          return (expr, popStack len st)
+
+getFunction :: FNum -> State -> Maybe StackFunction
+getFunction n state = get n $ functions state
+
+execute :: FNum -> [MetaExpr] -> State -> (MetaExpr, State)
+execute fnum exprs state = (expr', new'')
+  where
+    ((fname, args), ptr) = fromMaybe (("", 0), (-1)) (getFunction fnum state)
+    expr = fromMaybe ILegal (get ptr (instructions state))
+    new = writeStack exprs state
+    (expr', new') = reduce expr new
+    new'' = popStack args new'

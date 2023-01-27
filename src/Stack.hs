@@ -2,17 +2,13 @@ module Stack where
 
 import Data.List
 
-data Stack x = ListStack [x] | MutableStack (ArrayList x) deriving (Show)
+data Stack x = ListStack [x] deriving (Show)
 
 toStack :: [t] -> Stack t
 toStack = ListStack
 
-newMutableStack :: t -> Stack t
-newMutableStack = MutableStack
-
 push :: t -> Stack t -> Stack t
 push x (ListStack xs) = ListStack $ x : xs
-push x (MutableStack xs) =
 
 pop :: Stack t -> Maybe (Stack t)
 pop (ListStack []) = Nothing
@@ -29,3 +25,9 @@ elemIndex' :: (Eq t) => t -> Stack t -> Int
 elemIndex' x (ListStack xs) = case elemIndex x xs of
   Nothing -> -1
   Just index -> index
+
+pushAll :: [t] -> Stack t -> Stack t
+pushAll ys (ListStack xs) = ListStack $ xs ++ ys
+
+popN :: Int -> Stack t -> Stack t
+popN n (ListStack xs) = ListStack $ reverse $ drop n $ reverse xs
