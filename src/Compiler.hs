@@ -103,3 +103,7 @@ toState xs = State functions instructions args Heap Stats where
   functions = toStack $ functionList xs
   args = toStack []
   instructions = toStack $ toMetaExprs xs
+
+-- get the id of enty point
+getEntyPoint :: State -> Maybe Int
+getEntyPoint state = lookUp' ("main", 0) (functions state)

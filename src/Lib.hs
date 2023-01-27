@@ -1,12 +1,8 @@
 module Lib
     ( someFunc
     ) where
-import Parser
-import Text.Parsec.Prim (parse)
-import Compiler
+import Executor
 
 someFunc :: IO ()
-someFunc = print $ case parse program "test" "f x y = x; g x y = f x (5 + y);" of
-  (Left x) -> error $ show x
-  (Right prog) -> toState prog
+someFunc = print $ runProgram "test" "square x = x * x; main = square 3;"
 

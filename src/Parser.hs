@@ -58,7 +58,6 @@ subExpression =
 expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
 
-
 definition :: Parser CoreDefinition
 definition = do
   name <- function
@@ -115,7 +114,7 @@ variable :: Parser CoreExpr
 variable = EVar <$> identifier
 
 variableList :: Parser [CoreExpr]
-variableList = many1 variable
+variableList = try (many1 variable) <|> return []
 
 variableAndFunctionList :: Parser [CoreExpr]
 variableAndFunctionList = many1 (variable <|> try (ENum <$> int) <|> try (parens expression))

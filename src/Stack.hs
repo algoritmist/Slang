@@ -31,3 +31,6 @@ pushAll ys (ListStack xs) = ListStack $ xs ++ ys
 
 popN :: Int -> Stack t -> Stack t
 popN n (ListStack xs) = ListStack $ reverse $ drop n $ reverse xs
+
+lookUp' :: Eq p => p -> Stack (p, c) -> Maybe c
+lookUp' pair (ListStack pairs) = lookup pair pairs

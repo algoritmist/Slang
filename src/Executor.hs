@@ -6,11 +6,13 @@ import Data.Maybe
 import Language
 import Parser (program)
 import Stack
+import Text.Parsec.Prim (parse)
 import Utils
 
--- this function gets String input and returns the result of program execution
---execute :: String -> String
---execute = toState . program
+run :: State -> (MetaExpr, State)
+run state = case getEntyPoint state of
+  Nothing -> error "No enty point found"
+  Just n -> execute n [] state
 
 reduceAll :: [MetaExpr] -> State -> (MetaExpr -> State -> (MetaExpr, State)) -> ([MetaExpr], State)
 reduceAll exprs state reducer = (exprs', st')
@@ -85,3 +87,8 @@ execute fnum exprs state = (expr', new'')
     new = writeStack exprs state
     (expr', new') = reduce expr new
     new'' = popStack args new'
+
+runProgram :: String -> String -> (MetaExpr, State)
+runProgram name str = case parse program name str of
+  (Left x) -> error $ show x
+  (Right prog) -> run (toState prog)
