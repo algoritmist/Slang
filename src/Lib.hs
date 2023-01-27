@@ -4,5 +4,5 @@ module Lib
 import Executor
 
 someFunc :: IO ()
-someFunc = print $ runProgram "test" "K x y = y; square x = x + square x; main = K (square 3) 5;"
+someFunc = print $ runProgram "test" "K x y = y; f x = f x; main = K (f 3) 5;"
 

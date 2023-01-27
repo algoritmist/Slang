@@ -88,7 +88,10 @@ execute fnum exprs state = (expr', new'')
     (expr', new') = reduce expr new
     new'' = popStack args new'
 
-runProgram :: String -> String -> (MetaExpr, State)
+runProgram :: String -> String -> String
 runProgram name str = case parse program name str of
   (Left x) -> error $ show x
-  (Right prog) -> run (toState prog)
+  (Right prog) -> case run (toState prog) of
+    (Num x, _) -> show x
+    (expr, _) -> show expr
+
