@@ -6,12 +6,12 @@ cabal-version: 1.12
 
 name:           Slang
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/Slang#readme>
-homepage:       https://github.com/githubuser/Slang#readme
-bug-reports:    https://github.com/githubuser/Slang/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2023 Author name here
+description:    Please see the README on GitHub at <https://github.com/algoritmist/Slang#readme>
+homepage:       https://github.com/algoritmist/Slang#readme
+bug-reports:    https://github.com/algoritmist/Slang/issues
+author:         algoritmist
+maintainer:     _
+copyright:      2023 Author algoritmist
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,7 +21,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/Slang
+  location: https://github.com/algoritmist/Slang
 
 library
   exposed-modules:
@@ -47,7 +47,7 @@ library
     tuple
   default-language: Haskell2010
 
-executable Slang-exe
+executable Slang
   main-is: Slang.hs
   other-modules:
     Paths_Slang
