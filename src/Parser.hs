@@ -97,14 +97,11 @@ alters = many1 $ whiteSpace *> alter
 
 alter :: Parser CoreAlter
 alter = do
-  string "option"
-  whiteSpace
   tag <- int
   whiteSpace
   string "->"
   whiteSpace
   expr <- expression
-  optionMaybe $ char ','
   return (Alter (tag, expr))
 
 function :: Parser CoreFunction
@@ -138,4 +135,4 @@ application = do
   return $ EFunCall f vars
 
 program :: Parser CoreProgram
-program = many1 $ whiteSpace *> definition
+program = many1 $ whiteSpace *> definition <* whiteSpace

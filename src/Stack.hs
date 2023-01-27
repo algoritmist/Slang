@@ -2,7 +2,7 @@ module Stack where
 
 import Data.List
 
-data Stack x = ListStack [x] deriving (Show)
+newtype Stack x = ListStack [x] deriving Show
 
 toStack :: [t] -> Stack t
 toStack = ListStack

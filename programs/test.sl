@@ -1,3 +1,8 @@
-K x y = x;
+K x y = x; -- this is a one line comment
 f x = f x;
-main = K 5 (f 3);
+{-
+Multi
+line
+comment
+-}
+main = K 5 (f 3); -- infinite reduction
