@@ -35,7 +35,7 @@ reduce (VLabel n) st = (expr, st)
 -- exprs not fully redused here for laziness!
 reduce (FunCall fun exprs) st = execute fun exprs' st'
   where
-    (exprs', st') = reduceAll exprs st reduce
+    (exprs', st') = reduceAll exprs st weakReduce
 reduce (UnOp op expr) st = uncurry (applyUnOp op) (reduce expr st)
 reduce (BinOp op expr1 expr2) st = applyBinOp op e1 e2 st''
   where
