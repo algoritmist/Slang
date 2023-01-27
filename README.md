@@ -16,7 +16,6 @@ Clone project:
 ```
 git clone github.com/algoritmist/Slang.git
 cd Slang
-stack build
 ```
 Now you can run it:
-```stack exec -i <source_file.sl>```
+```stack build --exec "Slang <source_file.sl>"```
