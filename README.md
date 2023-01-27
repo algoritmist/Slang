@@ -19,3 +19,5 @@ cd Slang
 ```
 Now you can run it:
 ```stack build --exec "Slang <source_file.sl>"```
+
+You can find examples of programms in directory `programs`
