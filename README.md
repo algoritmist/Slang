@@ -5,7 +5,7 @@
 1. Parser
 1. Laziness
 ## TODO:
-1. case & let expressions
+1. let expressions
 2. more primitives
 3. data structures (list, etc.)
 ## Build
