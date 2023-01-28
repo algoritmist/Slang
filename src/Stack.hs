@@ -27,10 +27,10 @@ elemIndex' x (ListStack xs) = case elemIndex x xs of
   Just index -> index
 
 pushAll :: [t] -> Stack t -> Stack t
-pushAll ys (ListStack xs) = ListStack $ xs ++ ys
+pushAll ys (ListStack xs) = ListStack $ ys ++ xs
 
 popN :: Int -> Stack t -> Stack t
-popN n (ListStack xs) = ListStack $ reverse $ drop n $ reverse xs
+popN n (ListStack xs) = ListStack $ drop n xs
 
 lookUp' :: Eq p => p -> Stack (p, c) -> Maybe c
 lookUp' pair (ListStack pairs) = lookup pair pairs

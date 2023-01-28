@@ -9,6 +9,13 @@ import Stack
 import Text.Parsec.Prim (parse)
 import Utils
 
+runProgram :: String -> String -> String
+runProgram name str = case parse program name str of
+  (Left x) -> error $ show x
+  (Right prog) -> case run (toState prog) of
+    (Num x, _) -> show x
+    (expr, _) -> show expr
+
 run :: State -> (MetaExpr, State)
 run state = case getEntyPoint state of
   Nothing -> error "No enty point found"
@@ -22,29 +29,32 @@ reduceAll exprs state reducer = (exprs', st')
     exprs' = fstMap results
 
     reduces [] _ = error "cant reduce nothing"
-    reduces [x] state = [reducer x state]
-    reduces (x : xs) state = (x', state') : reduces xs state'
+    reduces [x] st = [reducer x st]
+    reduces (x : xs) st = (x', state') : reduces xs state'
       where
-        (x', state') = reducer x state
+        (x', state') = reducer x st
 
 -- to reduce and expression we should be aware of global State
 reduce :: MetaExpr -> State -> (MetaExpr, State)
-reduce (VLabel n) st = (expr, st)
+reduce (Num x) st = (Num x, st)
+reduce (VLabel n) st = reduce expr st
   where
-    expr = Data.Maybe.fromMaybe ILegal (get n $ stack st)
--- exprs not fully redused here for laziness!
+    expr = fromMaybe ILegal (get n $ stack st)
+-- exprs not fully reduced here for laziness!
 reduce (FunCall fun exprs) st = execute fun exprs' st'
   where
     (exprs', st') = reduceAll exprs st weakReduce
+reduce (MCase expr exprs) st = uncurry reduce (lookup' expr exprs st)
 reduce (UnOp op expr) st = uncurry (applyUnOp op) (reduce expr st)
 reduce (BinOp op expr1 expr2) st = applyBinOp op e1 e2 st''
   where
     (e1, st') = reduce expr1 st
     (e2, st'') = reduce expr2 st'
 -- any other expr wont be reduced
-reduce expr st = (expr, st) -- let & case not supported yet
+reduce _ st = (ILegal, st) -- let & case not supported yet
 
 weakReduce :: MetaExpr -> State -> (MetaExpr, State)
+weakReduce (Num x) st = reduce (Num x) st
 -- if its a variable then replace with stack value
 weakReduce (VLabel n) st = reduce (VLabel n) st
 -- else try reducing subexpr
@@ -58,7 +68,8 @@ weakReduce (BinOp op expr1 expr2) st = (BinOp op e1 e2, st'')
   where
     (e1, st') = weakReduce expr1 st
     (e2, st'') = weakReduce expr2 st'
-weakReduce expr st = (expr, st)
+weakReduce (MCase ex exs) _ = error "how?"
+weakReduce _ st = (ILegal, st)
 
 applyUnOp :: UnaryOperation -> MetaExpr -> State -> (MetaExpr, State)
 applyUnOp Neg expr st = case expr of
@@ -88,10 +99,7 @@ execute fnum exprs state = (expr', new'')
     (expr', new') = reduce expr new
     new'' = popStack args new'
 
-runProgram :: String -> String -> String
-runProgram name str = case parse program name str of
-  (Left x) -> error $ show x
-  (Right prog) -> case run (toState prog) of
-    (Num x, _) -> show x
-    (expr, _) -> show expr
-
+lookup' :: MetaExpr -> [(MetaExpr, MetaExpr)] -> State -> (MetaExpr, State)
+lookup' x xs st = (fromMaybe ILegal (lookup x' xs), st')
+  where
+    (x', st') = reduce x st

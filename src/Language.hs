@@ -21,13 +21,14 @@ data Expr a
       (Expr a) -- expression to scrutinise
       [Alter a] -- alternatives
   | ELam [a] (Expr a) -- lambda abstraction
+  | EOtherwise
   deriving (Show)
 
 type CoreExpr = Expr Name
 
 type Name = String
 
-newtype Alter a = Alter (Int, Expr a) deriving (Show) -- (tag, bound variables list?, expression)
+type Alter a = (Expr a, Expr a) -- (tag, bound variables list?, expression)
 
 type CoreAlter = Alter Name
 
@@ -101,6 +102,6 @@ languageDef =
       Token.commentLine = "--",
       Token.identStart = letter,
       Token.identLetter = alphaNum,
-      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option"],
+      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option", "->"],
       Token.reservedOpNames = Map.keys binaryOperations ++ Map.keys unaryOperations
     }

@@ -93,16 +93,17 @@ caseExpression = do
   return (ECase expr alts)
 
 alters :: Parser [CoreAlter]
-alters = many1 $ whiteSpace *> alter
+alters = many1 $ whiteSpace *> alter <* whiteSpace
 
 alter :: Parser CoreAlter
 alter = do
-  tag <- int
+  whiteSpace
+  tag <- try (ENum <$> int) <|> (EOtherwise <$ string "otherwise")
   whiteSpace
   string "->"
   whiteSpace
   expr <- expression
-  return (Alter (tag, expr))
+  return (tag, expr)
 
 function :: Parser CoreFunction
 function = identifier
@@ -114,7 +115,7 @@ variableList :: Parser [CoreExpr]
 variableList = try (many1 variable) <|> return []
 
 variableAndFunctionList :: Parser [CoreExpr]
-variableAndFunctionList = many1 (variable <|> try (ENum <$> int) <|> try (parens expression))
+variableAndFunctionList = many1 (variable <|> try (ENum <$> int) <|> try subExpression)
 
 variableDefinition :: Parser CoreVarDefinition
 variableDefinition = do
