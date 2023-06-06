@@ -1,8 +1,5 @@
-K x y = x; -- this is a one line comment
-f x = f x;
-{-
-Multi
-line
-comment
--}
-main = K 5 (f 3); -- infinite reduction
+fib n = case n of
+    1 -> 1
+    2 -> 1
+    otherwise -> fib (n + (-1)) + fib (n + (-2)); -- "-" is an unary operator
+main = fib 30;

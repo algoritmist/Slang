@@ -21,3 +21,7 @@ Now you can run it:
 ```stack build --exec "Slang <source_file.sl>"```
 
 You can find examples of programms in directory `programs`
+
+## Literature
+1. ISBN-10: 0137219520 Peyton Jones, Simon & Lester, David. (1992). Implementing Functional Language – A Tutorial. 
+2. Leijen, Daan. (2001). Parsec, a Fast Combinator Parser 
