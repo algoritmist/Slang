@@ -1,8 +1,8 @@
 module Executor where
 
-import Compiler hiding (toMeta, toMetaExprs, varToStr)
 import Control.Monad (when)
 import Data.Maybe
+import Interpreter hiding (toMeta, toMetaExprs, varToStr)
 import Language
 import Parser (program)
 import Stack
@@ -14,6 +14,7 @@ runProgram name str = case parse program name str of
   (Left x) -> error $ show x
   (Right prog) -> case run (toState prog) of
     (Num x, _) -> show x
+    (Real x, _) -> show x
     (expr, _) -> show expr
 
 run :: State -> (MetaExpr, State)
@@ -37,6 +38,7 @@ reduceAll exprs state reducer = (exprs', st')
 -- to reduce and expression we should be aware of global State
 reduce :: MetaExpr -> State -> (MetaExpr, State)
 reduce (Num x) st = (Num x, st)
+reduce (Real x) st = (Real x, st)
 reduce (VLabel n) st = reduce expr st
   where
     expr = fromMaybe ILegal (get n $ stack st)
@@ -55,6 +57,7 @@ reduce _ st = (ILegal, st) -- let & case not supported yet
 
 weakReduce :: MetaExpr -> State -> (MetaExpr, State)
 weakReduce (Num x) st = reduce (Num x) st
+weakReduce (Real x) st = reduce (Real x) st
 -- if its a variable then replace with stack value
 weakReduce (VLabel n) st = reduce (VLabel n) st
 -- else try reducing subexpr
@@ -81,6 +84,10 @@ applyBinOp Sum (Num x) (Num y) st = (Num $ x + y, st)
 applyBinOp Sub (Num x) (Num y) st = (Num $ x - y, st)
 applyBinOp Mul (Num x) (Num y) st = (Num $ x * y, st)
 applyBinOp Div (Num x) (Num y) st = (Num $ x `div` y, st)
+applyBinOp Sum (Real x) (Real y) st = (Real $ x + y, st)
+applyBinOp Sub (Real x) (Real y) st = (Real $ x - y, st)
+applyBinOp Mul (Real x) (Real y) st = (Real $ x * y, st)
+applyBinOp Div (Real x) (Real y) st = (Real $ x / y, st)
 applyBinOp _ _ _ st = (ILegal, st) --other binops not supported yet for simplicity
 
 type FNum = Int

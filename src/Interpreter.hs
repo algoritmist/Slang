@@ -1,4 +1,4 @@
-module Compiler where
+module Interpreter where
 
 import Data.List
 import Data.Tuple.Select
@@ -53,6 +53,7 @@ functionList xs = zip (map toExecFunction xs) [0 ..]
 data MetaExpr
   = VLabel Int -- Variable label
   | Num Int -- Numbers
+  | Real Double
   | Constr Int Int -- Constructors
   | UnOp UnaryOperation MetaExpr
   | BinOp BinaryOperation MetaExpr MetaExpr -- binary operation
@@ -94,7 +95,8 @@ toMeta vars fs (EFunCall f exprs) = case elemIndex f (fstMap fs) of
 toMeta vars fs (ECase expr exprs) = MCase (toMeta vars fs expr) (map (toMeta' vars fs) exprs)
 toMeta vars fs (EUnOp op expr) = UnOp op $ toMeta vars fs expr
 toMeta vars fs (EBinOp op e1 e2) = BinOp op (toMeta vars fs e1) (toMeta vars fs e2)
-toMeta _ _ (ENum x) = Num x
+toMeta _ _ (EInt x) = Num x
+toMeta _ _ (EFloat x) = Real x
 toMeta _ _ EOtherwise = MOtherwise
 toMeta _ _ _ = error "cant evaluate expression: not supported yet"
 

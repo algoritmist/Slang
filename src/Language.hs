@@ -8,7 +8,9 @@ import Utils
 
 data Expr a
   = EVar a -- Variables
-  | ENum Int -- Numbers
+  | EInt Int
+  | EFloat Double
+  | EString String
   | EConstr Int Int -- Constructors
   | EUnOp UnaryOperation (Expr a)
   | EBinOp BinaryOperation (Expr a) (Expr a) -- binary operation
@@ -34,7 +36,9 @@ type CoreAlter = Alter Name
 
 isAtomicExpr :: Expr a -> Bool
 isAtomicExpr (EVar _) = True
-isAtomicExpr (ENum _) = True
+isAtomicExpr (EInt _) = True
+isAtomicExpr (EFloat _) = True
+isAtomicExpr (EString _) = True
 isAtomicExpr _ = False
 
 type Program a = [ScDef a]
@@ -72,6 +76,7 @@ data BinaryOperation
   | Sub
   | Mul
   | Div
+  | AddList
   deriving (Show, Eq)
 
 binaryOperations :: Map.Map String BinaryOperation
@@ -88,7 +93,8 @@ binaryOperations =
       ("+", Sum),
       ("-", Sub),
       ("*", Mul),
-      ("/", Div)
+      ("/", Div),
+      (":", AddList)
     ]
 
 isBinaryBoolean :: BinaryOperation -> Bool
@@ -102,6 +108,6 @@ languageDef =
       Token.commentLine = "--",
       Token.identStart = letter,
       Token.identLetter = alphaNum,
-      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option", "->"],
+      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option", "->", "if"],
       Token.reservedOpNames = Map.keys binaryOperations ++ Map.keys unaryOperations
     }

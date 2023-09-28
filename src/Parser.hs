@@ -22,6 +22,10 @@ braces = Token.braces lexer
 
 commaSep = Token.commaSep lexer
 
+
+int :: Parser Int
+int = fromInteger <$> Token.integer lexer
+float :: Parser Double
 float = Token.float lexer -- parses a floating point value
 
 stringLiteral = Token.stringLiteral lexer -- parses a literal string
@@ -53,7 +57,7 @@ subExpression =
     <|> caseExpression
     <|> try application
     <|> variable
-    <|> ENum <$> int
+    <|> primitive
 
 expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
@@ -98,7 +102,7 @@ alters = many1 $ whiteSpace *> alter <* whiteSpace
 alter :: Parser CoreAlter
 alter = do
   whiteSpace
-  tag <- try (ENum <$> int) <|> (EOtherwise <$ string "otherwise")
+  tag <- EOtherwise <$ string "otherwise" <|> primitive
   whiteSpace
   string "->"
   whiteSpace
@@ -115,7 +119,7 @@ variableList :: Parser [CoreExpr]
 variableList = try (many1 variable) <|> return []
 
 variableAndFunctionList :: Parser [CoreExpr]
-variableAndFunctionList = many1 (variable <|> try (ENum <$> int) <|> try subExpression)
+variableAndFunctionList = many1 (variable <|> try primitive <|> try subExpression)
 
 variableDefinition :: Parser CoreVarDefinition
 variableDefinition = do
@@ -126,9 +130,6 @@ variableDefinition = do
   expr <- expression
   return (name, expr)
 
-int :: Parser Int
-int = fromInteger <$> Token.integer lexer
-
 application :: Parser CoreExpr
 application = do
   f <- function
@@ -137,3 +138,13 @@ application = do
 
 program :: Parser CoreProgram
 program = many1 $ whiteSpace *> definition <* whiteSpace
+
+parseString :: Parser String
+parseString = do
+  char '"'
+  s <- identifier
+  char '"'
+  return s
+
+primitive :: Parser CoreExpr
+primitive = (EString <$> parseString) <|> try (EFloat <$> float) <|> try (EInt <$> int)
