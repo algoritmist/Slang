@@ -11,7 +11,6 @@ data Expr a
   | EInt Int
   | EFloat Double
   | EString String
-  | EConstr Int Int -- Constructors
   | EUnOp UnaryOperation (Expr a)
   | EBinOp BinaryOperation (Expr a) (Expr a) -- binary operation
   | EFunCall (Function a) [Expr a] -- Applications
@@ -24,7 +23,10 @@ data Expr a
       [Alter a] -- alternatives
   | ELam [a] (Expr a) -- lambda abstraction
   | EOtherwise
-  deriving (Show)
+	| EIf (Expr a) (Alter a) -- if statement, otherwise == else
+	| EList [Expr a] -- should we check list contains elements of one type?
+  | EBool Bool
+	deriving (Show)
 
 type CoreExpr = Expr Name
 
