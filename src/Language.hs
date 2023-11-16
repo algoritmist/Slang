@@ -6,56 +6,50 @@ import Text.ParserCombinators.Parsec.Language
 import qualified Text.ParserCombinators.Parsec.Token as Token
 import Utils
 
-data Expr a
-  = EVar a -- Variables
+data Expr
+  = EVar String -- Variables
   | EInt Int
   | EFloat Double
   | EString String
-  | EUnOp UnaryOperation (Expr a)
-  | EBinOp BinaryOperation (Expr a) (Expr a) -- binary operation
-  | EFunCall (Function a) [Expr a] -- Applications
+  | EUnOp UnaryOperation Expr
+  | EBinOp BinaryOperation Expr Expr -- binary operation
+  | EFunCall String [Expr] -- Applications
   | ELet -- let(rec) expressions,
   --IsRec -- True if recursive,
-      CoreVarDefinition -- list of bound variables,
-      (Expr a) -- returned expression
+      [Expr] -- list of bound variables,
+      (Expr) -- returned expression
   | ECase -- case expression
-      (Expr a) -- expression to scrutinise
-      [Alter a] -- alternatives
-  | ELam [a] (Expr a) -- lambda abstraction
+      (Expr) -- expression to scrutinise
+      [Alter] -- alternatives
   | EOtherwise
-	| EIf (Expr a) (Alter a) -- if statement, otherwise == else
-	| EList [Expr a] -- should we check list contains elements of one type?
+  | EIf (Expr) (Alter) -- if statement, otherwise == else
+  | EList [Expr] -- should we check list contains elements of one type?
   | EBool Bool
-	deriving (Show)
+  | EDefinition (Function)
+  deriving (Show)
 
-type CoreExpr = Expr Name
+type CoreExpr = Expr
 
-type Name = String
+type Alter = (Expr, Expr) -- (tag, bound variables list?, expression)
 
-type Alter a = (Expr a, Expr a) -- (tag, bound variables list?, expression)
+type CoreAlter = Alter
 
-type CoreAlter = Alter Name
-
-isAtomicExpr :: Expr a -> Bool
+isAtomicExpr :: Expr -> Bool
 isAtomicExpr (EVar _) = True
 isAtomicExpr (EInt _) = True
 isAtomicExpr (EFloat _) = True
 isAtomicExpr (EString _) = True
 isAtomicExpr _ = False
 
-type Program a = [ScDef a]
 
-type CoreProgram = Program Name
 
-type ScDef a = (Function a, [Expr a], Expr a)
-type CoreDefinition = ScDef Name
+type Program = [Expr]
+type CoreProgram = Program
+type CoreDefinition = Expr
 
-type Function a = a
-type CoreFunction = Function Name
-
-type VarDefinition a = (Expr a, Expr a) -- (variable name & value)
-
-type CoreVarDefinition = VarDefinition Name
+data Function = Function {name :: String, args :: [Expr], expr :: Expr} deriving (Show)
+type CoreFunction = Function 
+type CoreFunctionName = String
 
 data UnaryOperation = Not | Neg deriving (Show, Eq)
 
@@ -110,6 +104,6 @@ languageDef =
       Token.commentLine = "--",
       Token.identStart = letter,
       Token.identLetter = alphaNum,
-      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option", "->", "if"],
+      Token.reservedNames = ["let", "letrec", "in", "where", "case", "of", "lambda", "option", "->", "if", "then", "else"],
       Token.reservedOpNames = Map.keys binaryOperations ++ Map.keys unaryOperations
     }

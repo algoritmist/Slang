@@ -27,6 +27,8 @@ int :: Parser Int
 int = fromInteger <$> Token.integer lexer
 float :: Parser Double
 float = Token.float lexer -- parses a floating point value
+bool :: Parser Bool
+bool = False <$ string "false" <|> True <$ string "true"
 
 stringLiteral = Token.stringLiteral lexer -- parses a literal string
 
@@ -53,16 +55,18 @@ operations =
 subExpression :: Parser CoreExpr
 subExpression =
   parens expression
+    <|> ifExpression
     <|> letExpression
     <|> caseExpression
     <|> try application
-    <|> variable
+    <|> try variableDefinition
+    <|> try variable
     <|> primitive
 
 expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
 
-definition :: Parser CoreDefinition
+definition :: Parser CoreExpr
 definition = do
   name <- function
   whiteSpace
@@ -72,18 +76,33 @@ definition = do
   whiteSpace
   expr <- expression
   char ';'
-  return (name, vars, expr)
+  return $ EDefinition $ Function name vars expr
 
 letExpression :: Parser CoreExpr
 letExpression = do
   string "let"
   whiteSpace
-  var <- variableDefinition
+  exprs <- many1 variableDefinition
   whiteSpace
   string "in"
   whiteSpace
-  expr <- expression
-  return (ELet var expr)
+  var <- expression
+  return (ELet exprs var)
+
+ifExpression :: Parser CoreExpr
+ifExpression = do
+  string "if"
+  whiteSpace
+  condition <- expression
+  whiteSpace
+  string "then"
+  whiteSpace
+  trueBranch <- expression
+  whiteSpace
+  string "else"
+  whiteSpace
+  falseBranch <- variable
+  return $ EIf condition (trueBranch, falseBranch)
 
 caseExpression :: Parser CoreExpr
 caseExpression = do
@@ -109,7 +128,7 @@ alter = do
   expr <- expression
   return (tag, expr)
 
-function :: Parser CoreFunction
+function :: Parser String
 function = identifier
 
 variable :: Parser CoreExpr
@@ -121,14 +140,14 @@ variableList = try (many1 variable) <|> return []
 variableAndFunctionList :: Parser [CoreExpr]
 variableAndFunctionList = many1 (variable <|> try primitive <|> try subExpression)
 
-variableDefinition :: Parser CoreVarDefinition
+variableDefinition :: Parser CoreExpr
 variableDefinition = do
-  name <- variable
+  name <- function
   whiteSpace
   char '='
   whiteSpace
   expr <- expression
-  return (name, expr)
+  return $ EDefinition $ Function name [] expr
 
 application :: Parser CoreExpr
 application = do
@@ -147,4 +166,4 @@ parseString = do
   return s
 
 primitive :: Parser CoreExpr
-primitive = (EString <$> parseString) <|> try (EFloat <$> float) <|> try (EInt <$> int)
+primitive = EBool <$> bool <|> (EString <$> parseString) <|> try (EFloat <$> float) <|> try (EInt <$> int)
