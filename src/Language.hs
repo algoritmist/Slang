@@ -13,7 +13,7 @@ data Expr
   | EString String
   | EUnOp UnaryOperation Expr
   | EBinOp BinaryOperation Expr Expr -- binary operation
-  | EFunCall String [Expr] -- Applications
+  | EFunCall String SplitExpr -- Applications
   | ELet -- let(rec) expressions,
   --IsRec -- True if recursive,
       [Expr] -- list of bound variables,
@@ -26,9 +26,11 @@ data Expr
   | EList [Expr] -- should we check list contains elements of one type?
   | EBool Bool
   | EDefinition (Function)
+  | EVarDefinition String Expr
   deriving (Show)
 
 type CoreExpr = Expr
+type SplitExpr = Expr
 
 type Alter = (Expr, Expr) -- (tag, bound variables list?, expression)
 
@@ -73,6 +75,7 @@ data BinaryOperation
   | Mul
   | Div
   | AddList
+  | SplitArgs
   deriving (Show, Eq)
 
 binaryOperations :: Map.Map String BinaryOperation
@@ -90,7 +93,8 @@ binaryOperations =
       ("-", Sub),
       ("*", Mul),
       ("/", Div),
-      (":", AddList)
+      (":", AddList),
+      (",", SplitArgs)
     ]
 
 isBinaryBoolean :: BinaryOperation -> Bool

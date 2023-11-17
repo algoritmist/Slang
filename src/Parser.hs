@@ -49,7 +49,7 @@ operations =
     [binOp GE, binOp LE, binOp L, binOp G],
     [binOp Eq, binOp NotE],
     [binOp And],
-    [binOp Or]
+    [binOp Or, binOp SplitArgs]
   ]
 
 subExpression :: Parser CoreExpr
@@ -60,26 +60,30 @@ subExpression =
     <|> caseExpression
     <|> try application
     <|> try variableDefinition
-    <|> try variable
+    <|> variable
     <|> primitive
+
 
 expression :: Parser CoreExpr
 expression = buildExpressionParser operations subExpression
 
 definition :: Parser CoreExpr
 definition = do
+  whiteSpace
   name <- function
   whiteSpace
-  vars <- variableList
+  vars <- try variableList <|> return []
   whiteSpace
   char '='
   whiteSpace
   expr <- expression
   char ';'
+  whiteSpace
   return $ EDefinition $ Function name vars expr
 
 letExpression :: Parser CoreExpr
 letExpression = do
+  whiteSpace
   string "let"
   whiteSpace
   exprs <- many1 variableDefinition
@@ -87,10 +91,12 @@ letExpression = do
   string "in"
   whiteSpace
   var <- expression
+  whiteSpace
   return (ELet exprs var)
 
 ifExpression :: Parser CoreExpr
 ifExpression = do
+  whiteSpace
   string "if"
   whiteSpace
   condition <- expression
@@ -102,10 +108,12 @@ ifExpression = do
   string "else"
   whiteSpace
   falseBranch <- variable
+  whiteSpace
   return $ EIf condition (trueBranch, falseBranch)
 
 caseExpression :: Parser CoreExpr
 caseExpression = do
+  whiteSpace
   string "case"
   whiteSpace
   expr <- expression
@@ -113,6 +121,7 @@ caseExpression = do
   string "of"
   whiteSpace
   alts <- alters
+  whiteSpace
   return (ECase expr alts)
 
 alters :: Parser [CoreAlter]
@@ -126,6 +135,7 @@ alter = do
   string "->"
   whiteSpace
   expr <- expression
+  whiteSpace
   return (tag, expr)
 
 function :: Parser String
@@ -135,24 +145,28 @@ variable :: Parser CoreExpr
 variable = EVar <$> identifier
 
 variableList :: Parser [CoreExpr]
-variableList = try (many1 variable) <|> return []
+variableList = many1 $ variable
 
-variableAndFunctionList :: Parser [CoreExpr]
-variableAndFunctionList = many1 (variable <|> try primitive <|> try subExpression)
+applicationList :: Parser CoreExpr
+applicationList = parens expression
 
 variableDefinition :: Parser CoreExpr
 variableDefinition = do
+  whiteSpace
   name <- function
   whiteSpace
   char '='
   whiteSpace
   expr <- expression
-  return $ EDefinition $ Function name [] expr
+  whiteSpace
+  return $ EVarDefinition name expr
 
 application :: Parser CoreExpr
 application = do
   f <- function
-  vars <- variableAndFunctionList
+  whiteSpace
+  vars <- applicationList
+  whiteSpace
   return $ EFunCall f vars
 
 program :: Parser CoreProgram

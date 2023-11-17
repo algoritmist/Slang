@@ -1,8 +1,9 @@
 module OpTree where
 import Language
-data OpTree = OpFunctionDefine Label Args | OpStore Data | OpLoad Data 
+data OpTree = OpFunctionDefine Label Args | OpStore Data | OpLoad Data | OpCall Label Args
     | UnOp UnaryOperation OpTree | BinOp BinaryOperation OpTree OpTree | OpStub CoreExpr deriving (Show)
 
+toOp expr = OpStub expr
 {--toOp :: Expr a -> OpTree
 toOp (EInt x) = OpStore x
 toOp (EFloat x) = OpStore x
