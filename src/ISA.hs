@@ -35,7 +35,7 @@ type Rs2 = Register
 type DataOffset = DataMemory
 type InstructionOffset = InstructionMemory
 
-data Instruction = RR RegisterRegister | S Store | B Branch | J Jump deriving (Show) 
+data Instruction = RR RegisterRegister | S Store | B Branch | J Jump | I IO deriving (Show) 
 
 {-
 Slang assembly supports the following types of instructions:
@@ -43,6 +43,9 @@ Slang assembly supports the following types of instructions:
 	2. Register-Memory with rs2 as destiantion register and rs1 as memory start address rs2 <- [rs1 + offset]
 	3. Branch, if condition on rs1 and rs2 is met, jump to PC <- PC + offset
 	4. Jump, save the return address to rd, and jump to PC <- PC + offset
+	5. IO operations
+		Read from input-device to [rd],
+		Write from [rs] to output-device
 -}
 
 type Num = Int
@@ -56,4 +59,5 @@ data RegisterRegister =
 	deriving(Show)  
 data Store = Mov Rs1 Rs2 | Ld Rs1 Rs2 DataOffset | St Rs1 Rs2 DataOffset deriving(Show)
 data Branch = JE Rs1 Rs2 InstructionOffset | JG Rs1 Rs2 InstructionOffset | JL Rs1 Rs2 InstructionOffset deriving(Show)
-data Jump = Jump Rd InstructionOffset deriving(Show)
+data Jump = Jump Rd InstructionOffset | Call InstructionOffset | Ret deriving(Show)
+data IO = In Rd InDevice | Out Rs OutDevice deriving(Show)
