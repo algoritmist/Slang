@@ -25,6 +25,8 @@ Heap:
 -}
 
 type Register = String
+zero = "x0"
+
 type DataMemory = Int
 type InstructionMemory = Int
 
@@ -32,17 +34,18 @@ type InstructionMemory = Int
 type Rd = Register
 type Rs1 = Register
 type Rs2 = Register
+type Label = String
 type DataOffset = DataMemory
 type InstructionOffset = InstructionMemory
 
-data Instruction = RR RegisterRegister | S Store | B Branch | J Jump | I IO deriving (Show) 
+data Instruction = RR RegisterRegister | S Store | B Branch | J Jump | I IO | P Pseudo deriving (Show) 
 
 {-
 Slang assembly supports the following types of instructions:
 	1. Register-Register with rd, rs1, rs2 as desitantion register, first operand, second operand
 	2. Register-Memory with rs2 as destiantion register and rs1 as memory start address rs2 <- [rs1 + offset]
 	3. Branch, if condition on rs1 and rs2 is met, jump to PC <- PC + offset
-	4. Jump, save the return address to rd, and jump to PC <- PC + offset
+	4. Jump, save the return address to rd, and jump to PC <- PC + offset. Call is a jump that returns to PC <- PC + 4
 	5. IO operations
 		Read from input-device to [rd],
 		Write from [rs] to output-device
@@ -51,13 +54,17 @@ Slang assembly supports the following types of instructions:
 type Num = Int
 
 data RegisterRegister = 
-	Add Rd Rs1 Rs2 | AddI Rd Rs1 Num |
-	Sub Rd Rs1 Rs2 | SubI Rd Rs1 Num |  
-	Mul Rd Rs1 Rs2 | MulI Rd Rs1 Num |
-	Div Rd Rs1 Rs2 | DivI Rd Rs1 Num |
-	Mod Rd Rs1 Rs2 | ModI Rd Rs1 Num
+	Add Rd Rs1 Rs2 |   
+	Sub Rd Rs1 Rs2 |
+	Mul Rd Rs1 Rs2 |
+	Div Rd Rs1 Rs2 |
+	Mod Rd Rs1 Rs2
 	deriving(Show)  
-data Store = Mov Rs1 Rs2 | Ld Rs1 Rs2 DataOffset | St Rs1 Rs2 DataOffset deriving(Show)
+data Store = Ld Rs1 Rs2 DataOffset | St Rs1 Rs2 DataOffset deriving(Show)
 data Branch = JE Rs1 Rs2 InstructionOffset | JG Rs1 Rs2 InstructionOffset | JL Rs1 Rs2 InstructionOffset deriving(Show)
-data Jump = Jump Rd InstructionOffset | Call InstructionOffset | Ret deriving(Show)
+data Jump = Jump Rd InstructionOffset deriving(Show)
 data IO = In Rd InDevice | Out Rs OutDevice deriving(Show)
+data Pseudo = 
+	Mov Rs1 Rs2 |
+	Call InstructionOffset |	Ret |	LabelCall Label |
+	AddI Rd Rs1 Num | MulI Rd Rs1 Num | DivI Rd Rs1 Num | ModI Rd Rs1 Num deriving(Show)

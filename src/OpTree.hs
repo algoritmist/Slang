@@ -1,6 +1,6 @@
 module OpTree where
 import Language
-data OpTree = OpFunctionDefine Label Args | OpStore Data | OpLoad Data | OpCall Label Args
+data OpTree =  rgs | OpStore Data | OpLoad Data | OpCall Label Args
     | UnOp UnaryOperation OpTree | BinOp BinaryOperation OpTree OpTree | OpStub CoreExpr deriving (Show)
 
 toOp expr = OpStub expr
@@ -17,4 +17,3 @@ type Args = [CoreExpr]
 
 type LinearCode = OpTree
 translate :: OpTree -> LinearCode
-translate = id
