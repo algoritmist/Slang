@@ -1,5 +1,5 @@
 module OpTree where
-import Language
+import           Language
 data OpTree = OpFunctionDefine Label Args | OpStore Data | OpLoad Data | OpCall Label Args
     | UnOp UnaryOperation OpTree | BinOp BinaryOperation OpTree OpTree | OpStub CoreExpr deriving (Show)
 

@@ -26,9 +26,11 @@ source-repository head
 library
   exposed-modules:
     GFC
+    ISA
     Language
     OpTree
     Parser
+    Translator
     Utils
   other-modules:
     Paths_Slang
